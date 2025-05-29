@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>who - A Narrative Puzzle Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="webste_icn.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="webste_icn.ico" type="image/x-icon"> 
     <style>
-        /* Define local fonts */
+        /* Define local fonts - NOTE: These URLs will not work in this environment.
+           You need to host these font files publicly or use Google Fonts alternatives. */
         @font-face {
             font-family: 'Alcotton';
-            src: url('alcotton.ttf') format('truetype');
+            src: url('alcotton.ttf') format('truetype'); /* Requires external hosting */
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Heavitas';
-            src: url('Heavitas.ttf') format('truetype');
-            font-weight: normal; /* Assuming regular weight for Heavitas */
+            src: url('Heavitas.ttf') format('truetype'); /* Requires external hosting */
+            font-weight: normal;
             font-style: normal;
         }
 
@@ -32,7 +33,7 @@
             margin: 0; /* Ensure no default margin */
         }
 
-        /* Font families */
+        /* Font families - Reverted to original intent with fallbacks */
         .font-monologue {
             font-family: 'Alcotton', 'Courier Prime', monospace; /* Alcotton first, Courier as fallback */
         }
@@ -66,13 +67,21 @@
         #monologue-section {
             background-color: #000000; /* Pure black for initial impact */
             color: #f0f0f0; /* Slightly brighter white for monologue text */
-        }
+            /* Keep fixed position initially to cover the screen during monologue */
+            position: fixed; 
+            inset: 0; 
+            z-index: 50;
+            /* Ensure it starts fully opaque for the monologue */
+            opacity: 1; 
+            transition: opacity 1.5s ease-in-out; /* For fading out later */
+        } 
         .monologue-line {
             opacity: 0;
             transition: opacity 1s ease-in-out;
-            margin-bottom: 1em; /* Adjusted for Alcotton if it's larger */
-            font-size: clamp(1.5rem, 4vw, 2rem); /* Slightly adjusted for Alcotton */
-            line-height: 1.4; /* Ensure readability with Alcotton */
+            margin-bottom: 0.8em; /* Slightly reduced margin for tighter spacing */
+            /* Adjusted clamp values for smaller screens, ensuring text fits */
+            font-size: clamp(1rem, 3vw, 1.6rem); /* Further adjusted for better fit */
+            line-height: 1.3; /* Ensure readability */
         }
         .monologue-line.visible {
             opacity: 1;
@@ -80,7 +89,8 @@
         .game-title {
             opacity: 0;
             transition: opacity 2s ease-in-out 0.5s; /* Delay after monologue lines finish */
-            font-size: clamp(3rem, 10vw, 5.5rem); /* Made title potentially larger with Heavitas */
+            /* Adjusted clamp values for title, ensuring it fits */
+            font-size: clamp(2rem, 8vw, 4.5rem); /* Adjusted for better fit */
             color: #ffffff;
         }
         .game-title.visible {
@@ -103,7 +113,9 @@
             animation: pulseArrow 2s infinite ease-in-out;
         }
         .scroll-indicator.hidden {
-            display: none;
+            opacity: 0; /* Fade out */
+            transition: opacity 0.5s ease-out;
+            pointer-events: none; /* Make it unclickable during fade-out */
         }
 
         @keyframes pulseArrow {
@@ -153,16 +165,16 @@
             font-size: clamp(0.9rem, 2vw, 1.1rem);
             color: #d1d5db; 
             max-width: 90%;
-            font-family: 'Heavitas', 'Inter', sans-serif; /* Use Heavitas for overlays if desired */
+            font-family: 'Heavitas', 'Inter', sans-serif; /* Using Heavitas for overlays */
         }
         .section-subtitle { 
             color: #9ca3af; 
-            font-size: clamp(1rem, 2vw, 1.25rem); /* Slightly larger for Heavitas */
+            font-size: clamp(1rem, 2vw, 1.25rem); /* Reverted to original sizing */
             margin-top: 1.5rem; /* More space for subtitle */
             max-width: 700px; 
             margin-left: auto;
             margin-right: auto;
-            font-family: 'Heavitas', 'Inter', sans-serif; /* Use Heavitas for subtitles */
+            font-family: 'Heavitas', 'Inter', sans-serif; /* Using Heavitas for subtitles */
             line-height: 1.5;
         }
 
@@ -180,9 +192,9 @@
             border: 2px solid #34d399; 
             color: #34d399;
             text-decoration: none;
-            font-family: 'Heavitas', sans-serif; /* Use Heavitas for button */
-            font-weight: normal; /* Heavitas might be bold by default */
-            font-size: 1.1rem; /* Adjust size if needed */
+            font-family: 'Heavitas', sans-serif; /* Using Heavitas for button */
+            font-weight: normal; 
+            font-size: 1.1rem; 
             border-radius: 0.375rem;
             transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             margin-top: 2.5rem;
@@ -216,25 +228,25 @@
             transform: translateY(0);
         }
         .glimpse-title {
-            font-size: clamp(1.75rem, 5vw, 2.75rem); /* Larger titles with Heavitas */
+            font-size: clamp(1.75rem, 5vw, 2.75rem); /* Reverted to original sizing */
             margin-bottom: 1.5rem;
             color: #e5e7eb; 
             font-family: 'Heavitas', 'Oswald', sans-serif; /* Ensure Heavitas is used */
         }
         .final-question {
-            font-family: 'Alcotton', 'Courier Prime', monospace;
-            font-size: clamp(1.75rem, 4vw, 2.25rem); /* Using Alcotton for final questions */
+            font-family: 'Alcotton', 'Courier Prime', monospace; /* Using Alcotton for final questions */
+            font-size: clamp(1.75rem, 4vw, 2.25rem); /* Reverted to original sizing */
         }
         .final-statement {
-            font-family: 'Alcotton', 'Courier Prime', monospace;
-            font-size: clamp(1.5rem, 3.5vw, 2rem); /* Using Alcotton for final statements */
+            font-family: 'Alcotton', 'Courier Prime', monospace; /* Using Alcotton for final statements */
+            font-size: clamp(1.5rem, 3.5vw, 2rem); /* Reverted to original sizing */
         }
 
     </style>
 </head>
 <body class="antialiased">
 
-    <section id="monologue-section" class="section fixed inset-0 z-50">
+    <section id="monologue-section" class="section"> 
         <div class="text-center leading-relaxed px-4">
             <p class="monologue-line font-monologue">i was sitting on my chair,</p>
             <p class="monologue-line font-monologue">i was thinking about those meaning i didn't even understand,</p>
@@ -246,18 +258,17 @@
         </div>
         <h1 class="game-title font-title mt-10 md:mt-16">who</h1>
         <div class="scroll-indicator">
-            <span>&#x2193;</span> </div>
+            <span>&#x2193;</span> 
+        </div>
     </section>
-
-    <div style="height: 100vh;" aria-hidden="true"></div>
 
     <section id="chair-section" class="section">
         <div class="img-showcase">
              <div class="img-showcase-inner">
-                <img src="test_chapter10003.jpg" 
-                     alt="A lone chair in a dark void, illuminated by a spotlight."
-                     onerror="this.onerror=null;this.src='https://placehold.co/1280x720/000000/FFFFFF?text=Image+Not+Found+-+test_chapter10003.jpg';">
-            </div>
+                 <img src="https://placehold.co/1280x720/000000/FFFFFF?text=A+lone+chair+in+a+dark+void" 
+                      alt="A lone chair in a dark void, illuminated by a spotlight."
+                      onerror="this.onerror=null;this.src='https://placehold.co/1280x720/000000/FFFFFF?text=Image+Not+Found+-+test_chapter10003.jpg';">
+             </div>
         </div>
         <p class="text-overlay italic">A narrative puzzle. A question of presence.</p>
     </section>
@@ -267,7 +278,7 @@
             
             <div class="glimpse-item">
                 <h2 class="glimpse-title">The Way Out?</h2>
-                <div class="img-showcase" style="background-image: url('bckground0004.jpg'); height: 70vh;"
+                <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/1a1a1a/FFFFFF?text=A+dim+light,+a+closed+door'); height: 70vh;"
                      onerror="this.style.backgroundImage='url(https://placehold.co/1920x1080/1a1a1a/FFFFFF?text=Image+Not+Found+-+bckground0004.jpg)'">
                 </div>
                 <p class="section-subtitle">A dim light, a closed door, an exit sign promising escape... or something else.</p>
@@ -275,14 +286,14 @@
 
             <div class="glimpse-item">
                 <h2 class="glimpse-title">Empty Spaces</h2>
-                 <div class="img-showcase" style="background-image: url('test_chapter10001.jpg'); height: 70vh;"
+                 <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/2a2a2a/FFFFFF?text=Dusty+shelves,+forgotten+objects'); height: 70vh;"
                       onerror="this.style.backgroundImage='url(https://placehold.co/1920x1080/2a2a2a/FFFFFF?text=Image+Not+Found+-+test_chapter10001.jpg)'"></div>
                 <p class="section-subtitle">Dusty shelves, forgotten objects. Traces of a life, or a construct?</p>
             </div>
 
             <div class="glimpse-item">
                 <h2 class="glimpse-title">The Threshold</h2>
-                <div class="img-showcase" style="background-image: url('test_chapter10000.jpg'); height: 70vh;"
+                <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/0f0f0f/FFFFFF?text=A+single+door,+stark+against+the+wall'); height: 70vh;"
                      onerror="this.style.backgroundImage='url(https://placehold.co/1920x1080/0f0f0f/FFFFFF?text=Image+Not+Found+-+test_chapter10000.jpg)'"></div>
                 <p class="section-subtitle">A single door, stark against the wall. An invitation or a warning?</p>
             </div>
@@ -292,7 +303,7 @@
     <section id="distorted-reality-section" class="section">
         <div class="img-showcase">
             <div class="img-showcase-inner">
-                <img src="test_chapter10002.jpg" 
+                <img src="https://placehold.co/1920x1080/000000/FFFFFF?text=A+surreal+room+with+many+windows" 
                      alt="A surreal room with many windows at odd angles."
                      onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/000000/FFFFFF?text=Image+Not+Found+-+test_chapter10002.jpg';">
             </div>
@@ -305,9 +316,9 @@
             <p class="final-question mb-6 js-fade-in-up">Why are you here?</p>
             <p class="final-statement mb-10 js-fade-in-up" style="transition-delay: 1s;">Perhaps it's time to find out.</p>
             <a href="https://github.com/kane8kki/whohl2mod/archive/refs/heads/main.zip"
-               class="download-button js-fade-in-up"
-               style="transition-delay: 2s;"
-               target="_blank" rel="noopener noreferrer">
+                class="download-button js-fade-in-up"
+                style="transition-delay: 2s;"
+                target="_blank" rel="noopener noreferrer">
                 Download 'who'
             </a>
         </div>
@@ -320,59 +331,78 @@
         const gameTitle = monologueSection.querySelector('.game-title');
         const scrollIndicator = monologueSection.querySelector('.scroll-indicator');
         let currentLine = 0;
-        let monologueFinished = false;
-        let initialScrollHandled = false;
 
-        // Animate monologue lines
-        function showNextLine() {
-            if (currentLine < monologueLines.length) {
-                monologueLines[currentLine].classList.add('visible');
-                currentLine++;
-                setTimeout(showNextLine, 1200); // Time between lines
-            } else {
-                gameTitle.classList.add('visible');
-                monologueFinished = true;
-                setTimeout(() => {
-                    if (scrollIndicator) scrollIndicator.classList.add('visible');
-                }, 1500); 
-            }
-        }
-
-        setTimeout(showNextLine, 700);
-
-        function handleInitialScroll() {
-            if (window.scrollY > window.innerHeight * 0.5 && !initialScrollHandled) { 
-                monologueSection.style.opacity = '0';
-                monologueSection.style.pointerEvents = 'none'; 
-                if (scrollIndicator) scrollIndicator.classList.add('hidden');
-                initialScrollHandled = true; 
-
-                sectionsToObserve.forEach(section => observer.observe(section));
-                glimpseItems.forEach(item => observer.observe(item)); 
-                invitationTextElements.forEach(el => observer.observe(el)); 
-
-                window.removeEventListener('scroll', handleInitialScroll); 
-            }
-        }
-        window.addEventListener('scroll', handleInitialScroll);
-
+        // Select all sections that need to be observed for fade-in effects, excluding the initial monologue section
         const sectionsToObserve = Array.from(document.querySelectorAll('.section:not(#monologue-section)'));
+        // Select specific elements within the glimpse section for staggered animation
         const glimpseItems = Array.from(document.querySelectorAll('.glimpse-item'));
+        // Select specific elements within the invitation section for staggered animation
         const invitationTextElements = Array.from(document.querySelectorAll('#invitation-section .js-fade-in-up'));
 
+        // Options for the Intersection Observer
         const observerOptions = {
-            root: null, 
-            threshold: 0.25, 
-            rootMargin: "0px 0px -50px 0px" 
+            root: null, // Use the viewport as the root
+            threshold: 0.25, // Trigger when 25% of the target is visible
+            rootMargin: "0px 0px -50px 0px" // Adjusts the viewport's bounding box
         };
 
-        const observer = new IntersectionObserver((entries, observerInstance) => {
+        // Create a new Intersection Observer instance
+        const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
+                    // Add 'visible' class to trigger CSS transitions
                     entry.target.classList.add('visible');
+                    // Optionally, stop observing once visible if it's a one-time animation
+                    // observer.unobserve(entry.target); 
                 }
             });
         }, observerOptions);
+
+        // Function to sequentially show each line of the monologue
+        function showNextLine() {
+            if (currentLine < monologueLines.length) {
+                // Make the current monologue line visible
+                monologueLines[currentLine].classList.add('visible');
+                currentLine++;
+                // Schedule the next line to appear
+                setTimeout(showNextLine, 1200); // Time delay between each line
+            } else {
+                // All monologue lines have been shown, now show the game title
+                gameTitle.classList.add('visible');
+                
+                // After the title appears, show the scroll indicator and prepare to fade out monologue section
+                setTimeout(() => {
+                    if (scrollIndicator) {
+                        scrollIndicator.classList.add('visible'); // Make scroll indicator visible
+                    }
+
+                    // After a short delay, start fading out the monologue section
+                    setTimeout(() => {
+                        monologueSection.style.opacity = '0'; // Start the CSS fade-out transition
+                        monologueSection.style.pointerEvents = 'none'; // Allow clicks/scrolls to pass through
+                        if (scrollIndicator) {
+                            scrollIndicator.classList.add('hidden'); // Hide the scroll indicator
+                        }
+
+                        // Listen for the end of the opacity transition on the monologue section
+                        monologueSection.addEventListener('transitionend', function handler() {
+                            monologueSection.style.display = 'none'; // Completely remove from layout after fade
+                            monologueSection.removeEventListener('transitionend', handler); // Clean up listener
+
+                            // Now that the monologue section is gone, start observing other sections
+                            // This ensures content below is only revealed after the intro
+                            sectionsToObserve.forEach(section => observer.observe(section));
+                            glimpseItems.forEach(item => observer.observe(item));
+                            invitationTextElements.forEach(el => observer.observe(el));
+                        });
+
+                    }, 1500); // Delay before monologue section starts fading out (after scroll indicator appears)
+                }, 1500); // Delay after title appears before scroll indicator and fade-out process begins
+            }
+        }
+
+        // Start the monologue animation when the DOM content is fully loaded
+        setTimeout(showNextLine, 700); // Initial delay before the first monologue line appears
     });
     </script>
 
