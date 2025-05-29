@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>who - A Narrative Puzzle Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom base styles */
+        body {
+            background-color: #0a0a0a; /* Very dark grey, almost black */
+            color: #e0e0e0; /* Light grey for text */
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            margin: 0; /* Ensure no default margin */
+        }
+
+        /* Font families */
+        .font-monologue {
+            font-family: 'Courier Prime', monospace;
+        }
+        .font-title {
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* General section styling */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            opacity: 0; /* Initially hidden for fade-in controlled by JS */
+            transition: opacity 1.5s ease-in-out;
+            position: relative;
+            overflow: hidden; /* Prevents content spill from animations */
+        }
+        .section.visible {
+            opacity: 1;
+        }
+
+        /* Monologue specific styling */
+        #monologue-section {
+            background-color: #000000; /* Pure black for initial impact */
+            color: #f0f0f0; /* Slightly brighter white for monologue text */
+        }
+        .monologue-line {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            margin-bottom: 0.75em; /* Spacing between lines */
+            font-size: clamp(1.25rem, 3vw, 1.75rem); /* Responsive font size */
+        }
+        .monologue-line.visible {
+            opacity: 1;
+        }
+        .game-title {
+            opacity: 0;
+            transition: opacity 2s ease-in-out 0.5s; /* Delay after monologue lines finish */
+            font-size: clamp(2.5rem, 8vw, 4.5rem); /* Responsive title font size */
+            color: #ffffff;
+        }
+        .game-title.visible {
+            opacity: 1;
+        }
+
+        /* Scroll indicator styling */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0; /* Hidden initially */
+            transition: opacity 1s ease-in-out;
+            color: #777; /* Muted color */
+            font-size: 1.5rem;
+        }
+        .scroll-indicator.visible {
+            opacity: 0.6;
+            animation: pulseArrow 2s infinite ease-in-out;
+        }
+        .scroll-indicator.hidden {
+            display: none;
+        }
+
+        @keyframes pulseArrow {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(5px); }
+        }
+        
+        /* Image showcase styling */
+        .img-showcase {
+            width: 100%;
+            height: 100vh; /* Make showcase areas full viewport height */
+            display: flex; /* Added for centering content */
+            justify-content: center; /* Added for centering content */
+            align-items: center; /* Added for centering content */
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            position: relative; /* For absolute positioning of overlays */
+        }
+        .img-showcase-inner { /* For images that are not backgrounds */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .img-showcase-inner img, .img-showcase img {
+            max-width: 90%; /* Max width relative to parent */
+            max-height: 85vh; /* Max height relative to viewport */
+            object-fit: contain;
+            border-radius: 0.375rem; /* Tailwind's rounded-md */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); /* Deeper shadow for atmosphere */
+        }
+        
+        /* Specific styling for the stark chair image */
+        #chair-section .img-showcase-inner img {
+            box-shadow: 0 0 50px rgba(50,50,50,0.3); /* Subtle glow for spotlight effect */
+        }
+
+        /* Text overlay for images */
+        .text-overlay {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #d1d5db; /* Tailwind gray-300 */
+            max-width: 90%;
+        }
+        .section-subtitle { /* For subtitles under glimpse items */
+            color: #9ca3af; /* Tailwind gray-400 */
+            font-size: clamp(0.8rem, 1.8vw, 1rem);
+            margin-top: 1rem;
+            max-width: 600px; /* Constrain width for readability */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+
+        /* Distorted reality section image zoom */
+        #distorted-reality-section .img-showcase-inner img {
+            transition: transform 10s cubic-bezier(0.25, 0.1, 0.25, 1) 0.5s; /* Smoother, delayed zoom */
+            transform: scale(1);
+        }
+        #distorted-reality-section.visible .img-showcase-inner img {
+            transform: scale(1.03); /* Very subtle zoom */
+        }
+
+        /* Download button styling */
+        .download-button {
+            display: inline-block;
+            padding: 0.875rem 2.5rem; /* Slightly larger padding */
+            border: 2px solid #34d399; /* Tailwind green-400 (like exit sign) */
+            color: #34d399;
+            text-decoration: none;
+            font-weight: 700; /* Bolder */
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            margin-top: 2.5rem;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.3); /* Subtle glow */
+        }
+        .download-button:hover {
+            background-color: #34d399;
+            color: #0a0a0a; /* Dark text on hover */
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(52, 211, 153, 0.5); /* Enhanced glow on hover */
+        }
+
+        /* Animation classes for JS-driven fade-in-up */
+        .js-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .js-fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Glimpse items for staggered animation */
+        .glimpse-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            width: 100%; /* Ensure items take full width for centering */
+        }
+         .glimpse-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .glimpse-title {
+            font-size: clamp(1.5rem, 4vw, 2.25rem); /* Responsive font size */
+            margin-bottom: 1.5rem;
+            color: #e5e7eb; /* Tailwind gray-200 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <section id="monologue-section" class="section fixed inset-0 z-50">
+        <div class="text-center leading-relaxed px-4">
+            <p class="monologue-line">i was sitting on my chair,</p>
+            <p class="monologue-line">i was thinking about those meaning i didn't even understand,</p>
+            <p class="monologue-line">but then, i realised,</p>
+            <p class="monologue-line">why was i here ?,</p>
+            <p class="monologue-line">what was i doing in this chair ?,</p>
+            <p class="monologue-line">it wasn't even my chair ?,</p>
+            <p class="monologue-line">so i stood up</p>
+        </div>
+        <h1 class="game-title font-title mt-10 md:mt-16">who</h1>
+        <div class="scroll-indicator">
+            <span>&#x2193;</span> </div>
+    </section>
+
+    <div style="height: 100vh;" aria-hidden="true"></div>
+
+    <section id="chair-section" class="section">
+        <div class="img-showcase">
+             <div class="img-showcase-inner">
+                <img src="https://placehold.co/1280x720/000000/101010?text=The+Lone+Chair" 
+                     alt="A lone chair in a dark void, illuminated by a spotlight."
+                     onerror="this.onerror=null;this.src='https://placehold.co/1280x720/000000/FFFFFF?text=Image+Not+Found';">
+            </div>
+        </div>
+        <p class="text-overlay italic">A narrative puzzle. A question of presence.</p>
+    </section>
+
+    <section id="glimpses-section" class="section">
+        <div class="w-full max-w-5xl mx-auto space-y-24 md:space-y-32">
+            
+            <div class="glimpse-item">
+                <h2 class="glimpse-title font-title">The Way Out?</h2>
+                <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/1a1a1a/2c2c2c?text=Dimly+Lit+Room+with+Exit'); height: 70vh;">
+                    </div>
+                <p class="section-subtitle">A dim light, a closed door, an exit sign promising escape... or something else.</p>
+            </div>
+
+            <div class="glimpse-item">
+                <h2 class="glimpse-title font-title">Empty Spaces</h2>
+                <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/2a2a2a/3d3d3d?text=Dusty+Room+with+Lantern'); height: 70vh;"></div>
+                <p class="section-subtitle">Dusty shelves, forgotten objects. Traces of a life, or a construct?</p>
+            </div>
+
+            <div class="glimpse-item">
+                <h2 class="glimpse-title font-title">The Threshold</h2>
+                <div class="img-showcase" style="background-image: url('https://placehold.co/1920x1080/0f0f0f/1f1f1f?text=Spotlit+Door'); height: 70vh;"></div>
+                <p class="section-subtitle">A single door, stark against the wall. An invitation or a warning?</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="distorted-reality-section" class="section">
+        <div class="img-showcase">
+            <div class="img-showcase-inner">
+                <img src="https://placehold.co/1920x1080/111111/222222?text=Surreal+Room+with+Windows" 
+                     alt="A surreal room with many windows at odd angles."
+                     onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/000000/FFFFFF?text=Image+Not+Found';">
+            </div>
+        </div>
+        <p class="text-overlay italic">Familiar spaces. Unsettling truths. What is real?</p>
+    </section>
+
+    <section id="invitation-section" class="section bg-black"> <div class="max-w-xl mx-auto px-4">
+            <p class="text-2xl md:text-3xl font-monologue mb-6 js-fade-in-up">Why are you here?</p>
+            <p class="text-xl md:text-2xl font-monologue mb-10 js-fade-in-up" style="transition-delay: 1s;">Perhaps it's time to find out.</p>
+            <a href="https://github.com/kane8kki/whohl2mod/archive/refs/heads/main.zip"
+               class="download-button js-fade-in-up"
+               style="transition-delay: 2s;"
+               target="_blank" rel="noopener noreferrer">
+                Download 'who'
+            </a>
+        </div>
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const monologueSection = document.getElementById('monologue-section');
+        const monologueLines = monologueSection.querySelectorAll('.monologue-line');
+        const gameTitle = monologueSection.querySelector('.game-title');
+        const scrollIndicator = monologueSection.querySelector('.scroll-indicator');
+        let currentLine = 0;
+        let monologueFinished = false;
+        let initialScrollHandled = false;
+
+        // Animate monologue lines
+        function showNextLine() {
+            if (currentLine < monologueLines.length) {
+                monologueLines[currentLine].classList.add('visible');
+                currentLine++;
+                setTimeout(showNextLine, 1200); // Time between lines
+            } else {
+                // After all lines, show game title
+                gameTitle.classList.add('visible');
+                monologueFinished = true;
+                // Show scroll indicator after title is visible and a short delay
+                setTimeout(() => {
+                    if (scrollIndicator) scrollIndicator.classList.add('visible');
+                }, 1500); // Delay for title to appear fully + a bit more
+            }
+        }
+
+        // Start monologue animation after a brief pause
+        setTimeout(showNextLine, 700);
+
+        // Handle initial scroll away from the fixed monologue section
+        function handleInitialScroll() {
+            if (window.scrollY > window.innerHeight * 0.5 && !initialScrollHandled) { // Scrolled 50% of viewport height
+                monologueSection.style.opacity = '0';
+                monologueSection.style.pointerEvents = 'none'; // Make it non-interactive
+                if (scrollIndicator) scrollIndicator.classList.add('hidden');
+                initialScrollHandled = true; // Prevent this from running multiple times
+
+                // Now that monologue is scrolled past, start observing other sections
+                // (excluding the monologue section itself and the spacer div)
+                sectionsToObserve.forEach(section => observer.observe(section));
+                glimpseItems.forEach(item => observer.observe(item)); // Observe glimpse items
+                invitationTextElements.forEach(el => observer.observe(el)); // Observe invitation text
+
+                window.removeEventListener('scroll', handleInitialScroll); // Clean up listener
+            }
+        }
+        window.addEventListener('scroll', handleInitialScroll);
+
+        // Intersection Observer for fade-in sections and elements
+        const sectionsToObserve = Array.from(document.querySelectorAll('.section:not(#monologue-section)'));
+        const glimpseItems = Array.from(document.querySelectorAll('.glimpse-item'));
+        const invitationTextElements = Array.from(document.querySelectorAll('#invitation-section .js-fade-in-up'));
+
+        const observerOptions = {
+            root: null, // viewport
+            threshold: 0.25, // 25% of the element is visible
+            rootMargin: "0px 0px -50px 0px" // Trigger a bit sooner when scrolling down
+        };
+
+        const observer = new IntersectionObserver((entries, observerInstance) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Optional: unobserve after animation if you don't want it to re-trigger
+                    // observerInstance.unobserve(entry.target); 
+                } else {
+                    // Optional: If you want elements to fade out when scrolled out of view
+                    // This is generally not done for simple scroll-in animations.
+                    // entry.target.classList.remove('visible');
+                }
+            });
+        }, observerOptions);
+
+        // IMPORTANT: Observation starts AFTER the initial scroll past the monologue.
+        // This is handled in the `handleInitialScroll` function.
+    });
+    </script>
+
+</body>
+</html>
